@@ -1,0 +1,7 @@
+project_id   = "your-gcp-project-id"
+region       = "us-central1"
+db_host      = "131.186.56.105"
+db_port      = "5432"
+db_name      = "postgres_db"
+db_user      = "postgres"
+db_password  = "your-db-password"

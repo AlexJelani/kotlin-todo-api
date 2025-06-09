@@ -10,6 +10,7 @@ A simple RESTful API for managing to-do tasks, built with Kotlin, Ktor, and Post
 - PostgreSQL (Database)
 - HikariCP (Connection pooling)
 - Kotlinx Serialization (JSON serialization)
+- Docker (Containerization)
 
 ## Project Structure
 
@@ -35,6 +36,9 @@ todo-api/
 │   │       ├── application.conf
 │   │       └── logback.xml
 │   └── test/
+├── .env.example
+├── docker-compose.yml
+├── Dockerfile
 └── build.gradle.kts
 ```
 
@@ -48,23 +52,40 @@ todo-api/
 
 ## Running the Application
 
-1. Make sure you have JDK 17+ installed
-2. Clone the repository
-3. Run the application:
+### Using Docker (Recommended)
+
+1. Make sure you have Docker and Docker Compose installed
+2. Create a `.env` file based on `.env.example` with your database credentials
+3. Build and start the containers:
    ```
-   ./gradlew run
+   docker-compose up -d
    ```
 4. The API will be available at `http://localhost:9000`
 
+### Using Gradle
+
+1. Make sure you have JDK 17+ installed
+2. Clone the repository
+3. Configure your database connection in `src/main/resources/application.conf` or set environment variables
+4. Run the application:
+   ```
+   ./gradlew run
+   ```
+5. The API will be available at `http://localhost:9000`
+
 ## Database Configuration
 
-The application is configured to connect to a remote PostgreSQL database with the following details:
+The application uses environment variables for database configuration:
 
-- Host: 131.186.56.105
-- Port: 5432
-- Database: postgres_db
-- User: postgres
-- Password: postgres_password
+```
+DB_HOST=your_database_host
+DB_PORT=your_database_port
+DB_NAME=your_database_name
+DB_USER=your_database_user
+DB_PASSWORD=your_database_password
+```
+
+These can be set in a `.env` file for Docker or as system environment variables when running with Gradle.
 
 ## Sample API Usage
 

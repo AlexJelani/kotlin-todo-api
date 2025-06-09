@@ -1,0 +1,26 @@
+{
+    "name": "Kotlin Todo API",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "fwcd.kotlin",
+                "mathiasfrohlich.kotlin",
+                "vscjava.vscode-java-pack",
+                "hashicorp.terraform",
+                "amazonwebservices.amazon-q",
+                "googlecloudtools.cloudcode",
+                "sourcegraph.cody-ai",
+                "cweijan.vscode-postgresql-client2",
+                "ms-ossdata.vscode-postgresql"
+            ],
+            "settings": {
+                "java.configuration.updateBuildConfiguration": "automatic"
+            }
+        }
+    },
+    "forwardPorts": [8080, 5432],
+    "postCreateCommand": "chmod +x ./gradlew && ./gradlew build"
+}

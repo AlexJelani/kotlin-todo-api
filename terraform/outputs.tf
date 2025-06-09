@@ -1,8 +1,3 @@
-output "service_url" {
-  description = "The URL of the deployed Cloud Run service"
-  value       = google_cloud_run_service.kotlin_todo_api.status[0].url
-}
-
 output "project_id" {
   description = "The GCP project ID"
   value       = var.project_id

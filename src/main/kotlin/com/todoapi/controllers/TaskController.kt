@@ -9,14 +9,18 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.taskRoutes(taskService: TaskService) {
+    // Health check endpoint for Cloud Run
+    get("/") {
+        call.respondText("Kotlin Todo API is running!", ContentType.Text.Plain)
+    }
+    
+    // API routes
     route("/api/tasks") {
-        // Get all tasks
         get {
             val tasks = taskService.getAllTasks()
             call.respond(tasks)
         }
         
-        // Get task by ID
         get("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull()
             if (id == null) {
@@ -32,14 +36,12 @@ fun Route.taskRoutes(taskService: TaskService) {
             }
         }
         
-        // Create new task
         post {
             val task = call.receive<Task>()
             val createdTask = taskService.createTask(task)
             call.respond(HttpStatusCode.Created, createdTask)
         }
         
-        // Update task
         put("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull()
             if (id == null) {
@@ -48,16 +50,14 @@ fun Route.taskRoutes(taskService: TaskService) {
             }
             
             val task = call.receive<Task>()
-            val updated = taskService.updateTask(id, task)
-            
-            if (updated) {
-                call.respond(HttpStatusCode.OK, "Task updated successfully")
+            val updatedTask = taskService.updateTask(id, task)
+            if (updatedTask != null) {
+                call.respond(updatedTask)
             } else {
                 call.respond(HttpStatusCode.NotFound, "Task not found")
             }
         }
         
-        // Delete task
         delete("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull()
             if (id == null) {
@@ -66,9 +66,8 @@ fun Route.taskRoutes(taskService: TaskService) {
             }
             
             val deleted = taskService.deleteTask(id)
-            
             if (deleted) {
-                call.respond(HttpStatusCode.OK, "Task deleted successfully")
+                call.respond(HttpStatusCode.NoContent)
             } else {
                 call.respond(HttpStatusCode.NotFound, "Task not found")
             }

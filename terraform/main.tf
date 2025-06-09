@@ -30,7 +30,7 @@ resource "null_resource" "build_and_push_image" {
   provisioner "local-exec" {
     command = <<-EOT
       gcloud auth configure-docker --quiet
-      docker build -t gcr.io/${var.project_id}/kotlin-todo-api:latest ${path.module}/..
+      docker build --platform linux/amd64 -t gcr.io/${var.project_id}/kotlin-todo-api:latest ${path.module}/..
       docker push gcr.io/${var.project_id}/kotlin-todo-api:latest
     EOT
   }
@@ -45,6 +45,9 @@ resource "google_cloud_run_service" "kotlin_todo_api" {
 
   template {
     spec {
+      # Increase the timeout to give the application more time to start
+      timeout_seconds = 600
+      
       containers {
         image = "gcr.io/${var.project_id}/kotlin-todo-api:latest"
         
@@ -92,6 +95,19 @@ resource "google_cloud_run_service" "kotlin_todo_api" {
           limits = {
             cpu    = "1000m"
             memory = "512Mi"
+          }
+        }
+        
+        # Configure startup probe with more lenient values
+        # timeout_seconds must be less than period_seconds
+        startup_probe {
+          initial_delay_seconds = 30    # Give more time before first check
+          timeout_seconds = 5           # Keep this less than period_seconds
+          period_seconds = 10
+          failure_threshold = 60        # Allow more failures before giving up (10 minutes total)
+          http_get {
+            path = "/health"            # Use your health check endpoint
+            port = 8080
           }
         }
       }

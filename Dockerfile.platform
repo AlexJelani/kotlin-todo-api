@@ -1,10 +1,10 @@
-FROM gradle:7.6.1-jdk17 AS build
+FROM --platform=linux/amd64 gradle:7.6.1-jdk17 AS build
 
 WORKDIR /app
 COPY . /app/
 RUN gradle build --no-daemon
 
-FROM openjdk:17-slim
+FROM --platform=linux/amd64 openjdk:17-slim
 
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar /app/app.jar

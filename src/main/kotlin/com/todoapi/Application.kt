@@ -11,12 +11,16 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.routing.*
+import io.ktor.server.response.*
+import io.ktor.http.*
 import kotlinx.serialization.json.Json
 import io.ktor.server.config.*
 
 fun main() {
-    // Read port from environment variable or use default 9000
-    val port = System.getenv("PORT")?.toIntOrNull() ?: 9000
+    // Read port from environment variable or use default 8080 (for Cloud Run compatibility)
+    val port = System.getenv("PORT")?.toIntOrNull() ?: 8080
+    
+    println("Starting server on port $port")
     
     embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module)
         .start(wait = true)
@@ -30,6 +34,8 @@ fun Application.module() {
     val dbUser = System.getenv("JDBC_DATABASE_USERNAME") ?: "postgres"
     val dbPassword = System.getenv("JDBC_DATABASE_PASSWORD") ?: "postgres_password"
     
+    println("Connecting to database at $dbHost:$dbPort/$dbName")
+    
     val dbConfig = MapApplicationConfig().apply {
         put("database.host", dbHost)
         put("database.port", dbPort)
@@ -38,7 +44,12 @@ fun Application.module() {
         put("database.password", dbPassword)
     }
     
-    DatabaseConfig.init(dbConfig)
+    try {
+        DatabaseConfig.init(dbConfig)
+    } catch (e: Exception) {
+        println("Warning: Database connection failed: ${e.message}")
+        // Continue application startup even if database connection fails
+    }
     
     // Configure JSON serialization
     install(ContentNegotiation) {
@@ -61,12 +72,17 @@ fun Application.module() {
         allowMethod(io.ktor.http.HttpMethod.Delete)
     }
     
-    // Initialize repositories and services
-    val taskRepository = TaskRepository()
-    val taskService = TaskService(taskRepository)
-    
-    // Configure routing
+    // Add a health check endpoint
     routing {
+        get("/health") {
+            call.respond(HttpStatusCode.OK, "OK")
+        }
+        
+        // Initialize repositories and services
+        val taskRepository = TaskRepository()
+        val taskService = TaskService(taskRepository)
+        
+        // Configure task routes
         taskRoutes(taskService)
     }
 }

@@ -11,6 +11,8 @@ A simple RESTful API for managing to-do tasks, built with Kotlin, Ktor, and Post
 - HikariCP (Connection pooling)
 - Kotlinx Serialization (JSON serialization)
 - Docker (Containerization)
+- Terraform (Infrastructure as Code)
+- Google Cloud Run (Optional deployment target)
 
 ## Project Structure
 
@@ -36,6 +38,11 @@ todo-api/
 │   │       ├── application.conf
 │   │       └── logback.xml
 │   └── test/
+├── terraform/           # GCP deployment configuration
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── versions.tf
 ├── .env.example
 ├── docker-compose.yml
 ├── Dockerfile
@@ -52,7 +59,7 @@ todo-api/
 
 ## Running the Application
 
-### Using Docker (Recommended)
+### Using Docker (Recommended for Local Development)
 
 1. Make sure you have Docker and Docker Compose installed
 2. Create a `.env` file based on `.env.example` with your database credentials
@@ -72,6 +79,46 @@ todo-api/
    ./gradlew run
    ```
 5. The API will be available at `http://localhost:9000`
+
+### Deploying to Google Cloud Run with Terraform
+
+#### Prerequisites
+
+1. [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed and configured
+2. [Terraform](https://www.terraform.io/downloads.html) installed (v1.0.0+)
+3. Docker installed and running
+4. A Google Cloud Platform project with billing enabled
+5. Your PostgreSQL database must be accessible from the internet
+
+#### Deployment Steps
+
+1. Navigate to the terraform directory:
+   ```bash
+   cd terraform
+   ```
+
+2. Create a `terraform.tfvars` file based on the example:
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+
+3. Edit `terraform.tfvars` with your specific values:
+   - `project_id`: Your GCP project ID
+   - `region`: The GCP region to deploy to
+   - `db_password`: Your PostgreSQL database password
+
+4. Initialize and apply Terraform:
+   ```bash
+   terraform init
+   terraform apply
+   ```
+
+5. After deployment, Terraform will output the URL of your Cloud Run service.
+
+6. To remove all resources:
+   ```bash
+   terraform destroy
+   ```
 
 ## Database Configuration
 
@@ -122,3 +169,10 @@ curl -X PUT http://localhost:9000/api/tasks/1 \
 ```bash
 curl -X DELETE http://localhost:9000/api/tasks/1
 ```
+
+## Notes on Cloud Deployment
+
+- When deploying to Google Cloud Run, ensure your database allows connections from Google Cloud IP ranges
+- The first deployment may take several minutes as it builds and pushes the Docker image
+- Environment variables containing sensitive information are marked as sensitive in Terraform
+- Cloud Run automatically scales based on traffic and you only pay for actual usage

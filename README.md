@@ -43,6 +43,10 @@ todo-api/
 │   ├── variables.tf
 │   ├── outputs.tf
 │   └── versions.tf
+├── .github/             # CI/CD configuration
+│   └── workflows/
+│       ├── main.yml     # Application build and deployment workflow
+│       └── terraform.yml # Infrastructure deployment workflow
 ├── .env.example
 ├── docker-compose.yml
 ├── Dockerfile
@@ -176,3 +180,48 @@ curl -X DELETE http://localhost:9000/api/tasks/1
 - The first deployment may take several minutes as it builds and pushes the Docker image
 - Environment variables containing sensitive information are marked as sensitive in Terraform
 - Cloud Run automatically scales based on traffic and you only pay for actual usage
+
+## CI/CD Pipeline Setup
+
+This project includes GitHub Actions workflows for CI/CD. The workflows are currently configured to run only on manual triggers until you complete the setup.
+
+### Prerequisites for CI/CD
+
+Before enabling automatic CI/CD pipeline runs, complete these steps:
+
+1. **Set up GitHub Secrets**:
+   Add these secrets in your GitHub repository settings (Settings > Secrets and variables > Actions):
+   - `GCP_SA_KEY`: JSON key for a Google Cloud service account
+   - `DB_HOST`: Your PostgreSQL host
+   - `DB_PORT`: Your PostgreSQL port
+   - `DB_NAME`: Your database name
+   - `DB_USER`: Your database user
+   - `DB_PASSWORD`: Your database password
+
+2. **Create a Google Cloud Service Account**:
+   - Go to GCP Console > IAM & Admin > Service Accounts
+   - Create a new service account with these roles:
+     - Cloud Run Admin
+     - Storage Admin
+     - Cloud Build Editor
+     - Service Account User
+   - Create and download a JSON key
+   - Add this JSON key as the `GCP_SA_KEY` secret in GitHub
+
+3. **Enable Required APIs** in your Google Cloud project:
+   - Cloud Run API
+   - Cloud Build API
+   - Container Registry API
+
+4. **Enable Automatic Workflow Triggers**:
+   - Once all prerequisites are complete, uncomment the trigger sections in:
+     - `.github/workflows/main.yml`
+     - `.github/workflows/terraform.yml`
+   - Commit and push these changes to enable automatic CI/CD
+
+### Manual Workflow Execution
+
+Until automatic triggers are enabled, you can manually run the workflows:
+1. Go to the "Actions" tab in your GitHub repository
+2. Select the workflow you want to run
+3. Click "Run workflow" and select the branch

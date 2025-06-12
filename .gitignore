@@ -18,8 +18,7 @@ out/
 *.class
 *.log
 
-# Package Files
-*.jar
+# Package Files (except Gradle wrapper)
 *.war
 *.nar
 *.ear

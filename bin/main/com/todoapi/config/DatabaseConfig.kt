@@ -10,40 +10,65 @@ import com.todoapi.models.Tasks
 
 object DatabaseConfig {
     fun init(config: ApplicationConfig) {
-        // Try to get database connection info from environment variables first
-        // Fall back to application.conf if environment variables are not set
-        val jdbcUrl = System.getenv("JDBC_DATABASE_URL") ?: run {
-            val databaseConfig = config.config("database")
-            val host = System.getenv("DB_HOST") ?: databaseConfig.propertyOrNull("host")?.getString() ?: "localhost"
-            val port = System.getenv("DB_PORT") ?: databaseConfig.propertyOrNull("port")?.getString() ?: "5432"
-            val name = System.getenv("DB_NAME") ?: databaseConfig.propertyOrNull("name")?.getString() ?: "postgres"
+        val env = System.getenv()
+        val appDbConfig = config.config("database") // Ktor's ApplicationConfig for "database" node
+
+        // Determine JDBC URL: Prioritize JDBC_DATABASE_URL, then construct from DB_HOST/PORT/NAME, then application.conf, then defaults.
+        val jdbcUrl = env["JDBC_DATABASE_URL"] ?: run {
+            val host = env["DB_HOST"] ?: appDbConfig.propertyOrNull("host")?.getString() ?: "localhost"
+            val port = env["DB_PORT"] ?: appDbConfig.propertyOrNull("port")?.getString() ?: "5432"
+            val name = env["DB_NAME"] ?: appDbConfig.propertyOrNull("name")?.getString() ?: "postgres" // Default DB name
             "jdbc:postgresql://$host:$port/$name"
         }
         
-        val user = System.getenv("JDBC_DATABASE_USERNAME") ?: System.getenv("DB_USER")
-            ?: config.config("database").propertyOrNull("user")?.getString() ?: "postgres"
-        val password = System.getenv("JDBC_DATABASE_PASSWORD") ?: System.getenv("DB_PASSWORD")
-            ?: config.config("database").propertyOrNull("password")?.getString() ?: ""
+        // Determine User: Prioritize JDBC_DATABASE_USERNAME, then DB_USER, then application.conf, then default "postgres".
+        val user = env["JDBC_DATABASE_USERNAME"]
+            ?: env["DB_USER"]
+            ?: appDbConfig.propertyOrNull("user")?.getString()
+            ?: "postgres" // Fallback user
 
-        println("Connecting to database: $jdbcUrl with user: $user")
+        // Determine Password: Prioritize JDBC_DATABASE_PASSWORD, then DB_PASSWORD, then application.conf. Fallback to empty string.
+        val password = env["JDBC_DATABASE_PASSWORD"]
+            ?: env["DB_PASSWORD"]
+            ?: appDbConfig.propertyOrNull("password")?.getString()
+            ?: "" // Fallback password
+
+        println("Attempting to connect to database.")
+        println("JDBC URL: $jdbcUrl")
+        println("User: $user")
+        // Avoid printing password directly: println("Password: ${if (password.isNotEmpty()) "********" else "not set"}")
         
         val hikariConfig = HikariConfig().apply {
             this.jdbcUrl = jdbcUrl
             this.username = user
             this.password = password
             this.driverClassName = "org.postgresql.Driver"
-            this.maximumPoolSize = 10
+            this.maximumPoolSize = 10 // Consider making this configurable
             this.isAutoCommit = false
             this.transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            // Recommended HikariCP settings
+            this.connectionTimeout = 30000 // 30 seconds
+            this.idleTimeout = 600000 // 10 minutes
+            this.maxLifetime = 1800000 // 30 minutes
             this.validate()
         }
 
-        val dataSource = HikariDataSource(hikariConfig)
-        Database.connect(dataSource)
+        try {
+            val dataSource = HikariDataSource(hikariConfig)
+            Database.connect(dataSource)
+            println("Database connection established successfully.")
 
-        // Create tables if they don't exist
-        transaction {
-            SchemaUtils.create(Tasks)
+            transaction {
+                SchemaUtils.create(Tasks)
+                println("Schema initialized (Tasks table created if not exists).")
+            }
+        } catch (e: Exception) {
+            println("ERROR: Failed to connect to the database or initialize schema.")
+            println("JDBC URL used: $jdbcUrl")
+            println("User used: $user")
+            println("Ensure DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD (or their JDBC_ equivalents) are correctly set in the environment.")
+            e.printStackTrace() // Log the full stack trace for detailed error
+            throw e // Re-throw to prevent application from starting in a broken state
         }
     }
 }

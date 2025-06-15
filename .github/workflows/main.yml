@@ -125,4 +125,4 @@ jobs:
         service: ${{ env.SERVICE_NAME }}
         project: ${{ env.PROJECT_ID }}
         region: ${{ env.REGION }}
-        service key: ${{ secrets.GCP_SA_KEY }}
+        service key: ${{ secrets.GCP_SA_KEY_BASE64 }}

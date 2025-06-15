@@ -74,7 +74,7 @@ jobs:
     
     - name: Build and Push Docker image
       run: |
-        gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA || true
+        gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA --quiet
     
     - name: Deploy to Cloud Run
       run: |

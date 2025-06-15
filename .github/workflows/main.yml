@@ -117,8 +117,9 @@ jobs:
           sleep $POLL_INTERVAL_SECONDS
           ELAPSED_TIME=$((ELAPSED_TIME + POLL_INTERVAL_SECONDS))
         done
-    # Note: Cloud Run deployment is disabled due to permission issues with the service account
-    # Permissions have been verified, enabling deployment.
+    # Note: Permissions required for deployment:
+    # 1. Cloud Run Admin role for the service account
+    # 2. Service Account User role on the compute service account
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy $SERVICE_NAME \
@@ -126,7 +127,5 @@ jobs:
           --platform managed \
           --region $REGION \
           --allow-unauthenticated \
-          # If you have environment variables defined in .env.example that need to be set in Cloud Run,
-          # add them here using --set-env-vars="KEY1=VALUE1,KEY2=VALUE2"
-          # For sensitive data, use Secret Manager: https://cloud.google.com/run/docs/configuring/secrets
+          --set-env-vars="DB_HOST=${{ secrets.DB_HOST }},DB_PORT=${{ secrets.DB_PORT }},DB_NAME=${{ secrets.DB_NAME }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
           --quiet

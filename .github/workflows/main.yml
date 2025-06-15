@@ -1,13 +1,12 @@
 name: Kotlin Todo API CI/CD
 
-# Commented out triggers to prevent automatic runs until secrets are configured
-# Uncomment these when you're ready to enable the pipeline
+# Triggers for the workflow
 on:
-  # push:
-  #   branches: [ main ]
-  # pull_request:
-  #   branches: [ main ]
-  workflow_dispatch:  # Only manual triggers enabled for now
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Manual trigger also enabled
 
 # Note: For better security, consider using Workload Identity Federation
 # instead of service account keys: https://github.com/google-github-actions/auth#setup

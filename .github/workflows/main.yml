@@ -74,7 +74,15 @@ jobs:
     
     - name: Build and push Docker image
       run: |
-        gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA --timeout=30m
+        BUILD_ID=$(gcloud builds submit --quiet --tag gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA --timeout=30m --format="value(id)")
+        gcloud builds log $BUILD_ID || echo "Log streaming failed, but build may have succeeded"
+        
+        # Verify build status explicitly
+        STATUS=$(gcloud builds describe $BUILD_ID --format="value(status)")
+        if [ "$STATUS" != "SUCCESS" ]; then
+          echo "Build failed with status $STATUS"
+          exit 1
+        fi
     
     - name: Deploy to Cloud Run
       run: |

@@ -27,12 +27,12 @@ fun main() {
 }
 
 fun Application.module() {
-    // Initialize database with environment variables or config
-    val dbHost = System.getenv("DB_HOST") ?: "localhost"
-    val dbPort = System.getenv("DB_PORT") ?: "5432"
-    val dbName = System.getenv("DB_NAME") ?: "postgres_db"
-    val dbUser = System.getenv("JDBC_DATABASE_USERNAME") ?: "postgres"
-    val dbPassword = System.getenv("JDBC_DATABASE_PASSWORD") ?: "postgres_password"
+    // Initialize database with environment variables
+    val dbHost = System.getenv("DB_HOST")
+    val dbPort = System.getenv("DB_PORT")
+    val dbName = System.getenv("DB_NAME")
+    val dbUser = System.getenv("DB_USER")
+    val dbPassword = System.getenv("DB_PASSWORD")
     
     println("Connecting to database at $dbHost:$dbPort/$dbName")
     

@@ -2,6 +2,10 @@
 
 A simple RESTful API for managing to-do tasks, built with Kotlin, Ktor, and PostgreSQL.
 
+## CI/CD Status
+
+This project uses GitHub Actions for continuous integration and deployment to Google Cloud Run.
+
 ## Technologies Used
 
 - Kotlin

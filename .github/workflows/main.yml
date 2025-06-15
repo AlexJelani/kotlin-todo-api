@@ -117,12 +117,17 @@ jobs:
           sleep $POLL_INTERVAL_SECONDS
           ELAPSED_TIME=$((ELAPSED_TIME + POLL_INTERVAL_SECONDS))
         done
-    # Using third-party action for Cloud Run deployment
+    # Using Google's official Cloud Run deployment action
     - name: Deploy to Cloud Run
-      uses: stefda/action-cloud-run@v1.6
+      uses: google-github-actions/deploy-cloudrun@v1
       with:
-        image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
         service: ${{ env.SERVICE_NAME }}
-        project: ${{ env.PROJECT_ID }}
+        image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
         region: ${{ env.REGION }}
-        service key: ${{ secrets.GCP_SA_KEY_BASE64 }}
+        flags: --allow-unauthenticated
+        env_vars: |
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}

@@ -9,6 +9,9 @@ on:
   #   branches: [ main ]
   workflow_dispatch:  # Only manual triggers enabled for now
 
+# Note: For better security, consider using Workload Identity Federation
+# instead of service account keys: https://github.com/google-github-actions/auth#setup
+
 env:
   PROJECT_ID: kotlin-todo-api-project
   SERVICE_NAME: kotlin-todo-api
@@ -71,8 +74,6 @@ jobs:
       uses: google-github-actions/auth@v1
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
     
     - name: Build and push Docker image
       run: |

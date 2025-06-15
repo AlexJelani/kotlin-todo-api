@@ -10,20 +10,15 @@ import com.todoapi.models.Tasks
 
 object DatabaseConfig {
     fun init(config: ApplicationConfig) {
-        // Try to get database connection info from environment variables first
-        // Fall back to application.conf if environment variables are not set
-        val jdbcUrl = System.getenv("JDBC_DATABASE_URL") ?: run {
-            val databaseConfig = config.config("database")
-            val host = System.getenv("DB_HOST") ?: databaseConfig.propertyOrNull("host")?.getString() ?: "localhost"
-            val port = System.getenv("DB_PORT") ?: databaseConfig.propertyOrNull("port")?.getString() ?: "5432"
-            val name = System.getenv("DB_NAME") ?: databaseConfig.propertyOrNull("name")?.getString() ?: "postgres"
-            "jdbc:postgresql://$host:$port/$name"
-        }
+        // Get database connection info from config
+        val databaseConfig = config.config("database")
+        val host = databaseConfig.propertyOrNull("host")?.getString()
+        val port = databaseConfig.propertyOrNull("port")?.getString()
+        val name = databaseConfig.propertyOrNull("name")?.getString()
+        val jdbcUrl = "jdbc:postgresql://$host:$port/$name"
         
-        val user = System.getenv("JDBC_DATABASE_USERNAME") ?: System.getenv("DB_USER")
-            ?: config.config("database").propertyOrNull("user")?.getString() ?: "postgres"
-        val password = System.getenv("JDBC_DATABASE_PASSWORD") ?: System.getenv("DB_PASSWORD")
-            ?: config.config("database").propertyOrNull("password")?.getString() ?: ""
+        val user = databaseConfig.propertyOrNull("user")?.getString()
+        val password = databaseConfig.propertyOrNull("password")?.getString()
 
         println("Connecting to database: $jdbcUrl with user: $user")
         

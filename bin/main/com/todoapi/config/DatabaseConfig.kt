@@ -14,15 +14,15 @@ object DatabaseConfig {
         // Fall back to application.conf if environment variables are not set
         val jdbcUrl = System.getenv("JDBC_DATABASE_URL") ?: run {
             val databaseConfig = config.config("database")
-            val host = databaseConfig.propertyOrNull("host")?.getString() ?: "localhost"
-            val port = databaseConfig.propertyOrNull("port")?.getString() ?: "5432"
-            val name = databaseConfig.propertyOrNull("name")?.getString() ?: "postgres"
+            val host = System.getenv("DB_HOST") ?: databaseConfig.propertyOrNull("host")?.getString() ?: "localhost"
+            val port = System.getenv("DB_PORT") ?: databaseConfig.propertyOrNull("port")?.getString() ?: "5432"
+            val name = System.getenv("DB_NAME") ?: databaseConfig.propertyOrNull("name")?.getString() ?: "postgres"
             "jdbc:postgresql://$host:$port/$name"
         }
         
-        val user = System.getenv("JDBC_DATABASE_USERNAME") 
+        val user = System.getenv("JDBC_DATABASE_USERNAME") ?: System.getenv("DB_USER")
             ?: config.config("database").propertyOrNull("user")?.getString() ?: "postgres"
-        val password = System.getenv("JDBC_DATABASE_PASSWORD") 
+        val password = System.getenv("JDBC_DATABASE_PASSWORD") ?: System.getenv("DB_PASSWORD")
             ?: config.config("database").propertyOrNull("password")?.getString() ?: ""
 
         println("Connecting to database: $jdbcUrl with user: $user")
